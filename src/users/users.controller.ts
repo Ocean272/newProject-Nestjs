@@ -3,6 +3,7 @@ import { UsersService } from './users.service';
 import * as bcrypt from 'bcrypt';
 import { LocalAuthGuard } from 'src/auth/local.auth.guard';
 import { User } from './interfaces/user.interface'
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
 
 @Controller('users')
 export class UsersController {
@@ -20,7 +21,7 @@ export class UsersController {
   }
 
   //post/ signup
-  @Post('signup')
+  @Post('/signup')
   async addUser(
     @Body('password') userPassword: string,
     @Body('username') userName: string,
@@ -40,14 +41,21 @@ export class UsersController {
     };
   }
   @UseGuards(LocalAuthGuard)
-  @Post('login')
+  @Post('/login')
   login(@Request() req): any {
     return { User: req.user, msg: 'User logged in' };
   }
 
   //Get /protected
+  @UseGuards(AuthenticatedGuard)
   @Get('/protected')
   getHello(@Request() req): string {
     return req.user;
+  }
+
+  @Get('/logout')
+  logout(@Request() req): any {
+    req.session.destroy();
+    return { message: 'The user session has ended'};
   }
 }
